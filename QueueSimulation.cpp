@@ -25,17 +25,16 @@ double factorial(int n) {
     return result;
 }
 
-int main() {
-    srand(time(0));
+void runSimulation(string filename) {
 
     double lambda, mu;
     int M;
     int numCustomers;
 
-    ifstream file("test1.txt");
+    ifstream file(filename);
     if (!file) {
-        cout << "Error opening test1.txt\n";
-        return 1;
+        cout << "Error opening " << filename << endl;
+        return;
     }
 
     file >> lambda;
@@ -157,13 +156,8 @@ int main() {
     double W_sim  = (totalWaitTime + totalServiceTime) / numCustomers;
     double Wq_sim = totalWaitTime / numCustomers;
 
-    double rho_sim = 0.0;
-    if (totalSimTime > 0)
-        rho_sim = totalServiceTime / (M * totalSimTime);
-
-    double Po_sim = 0.0;
-    if (totalSimTime > 0)
-        Po_sim = idleTime / totalSimTime;
+    double rho_sim = totalServiceTime / (M * totalSimTime);
+    double Po_sim  = idleTime / totalSimTime;
 
     double probWait_sim =
         (double)customerWaitedCnt / numCustomers;
@@ -192,22 +186,31 @@ int main() {
 
     cout << fixed << setprecision(4);
 
-    cout << "\nAnalytical Model (test1.txt)\n";
-    cout << "----------------------------------\n";
-    cout << "Po:  " << Po << "\n";
-    cout << "L:   " << L << "\n";
-    cout << "W:   " << W << "\n";
-    cout << "Lq:  " << Lq << "\n";
-    cout << "Wq:  " << Wq << "\n";
-    cout << "rho: " << rho << "\n";
+    cout << "\n======================================\n";
+    cout << "Results for " << filename << endl;
+    cout << "======================================\n";
 
-    cout << "\nSimulation Results (test1.txt)\n";
-    cout << "----------------------------------\n";
-    cout << "Po:  " << Po_sim << "\n";
-    cout << "W:   " << W_sim << "\n";
-    cout << "Wq:  " << Wq_sim << "\n";
-    cout << "rho: " << rho_sim << "\n";
-    cout << "Prob(wait): " << probWait_sim << "\n";
+    cout << "\nAnalytical Model\n";
+    cout << "Po:  " << Po << endl;
+    cout << "L:   " << L << endl;
+    cout << "W:   " << W << endl;
+    cout << "Lq:  " << Lq << endl;
+    cout << "Wq:  " << Wq << endl;
+    cout << "rho: " << rho << endl;
+
+    cout << "\nSimulation Results\n";
+    cout << "Po:  " << Po_sim << endl;
+    cout << "W:   " << W_sim << endl;
+    cout << "Wq:  " << Wq_sim << endl;
+    cout << "rho: " << rho_sim << endl;
+    cout << "Prob(wait): " << probWait_sim << endl;
+}
+
+int main() {
+    srand(time(0));
+
+    runSimulation("test1.txt");
+    runSimulation("test2.txt");
 
     return 0;
 }
