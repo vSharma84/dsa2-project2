@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <iomanip>
 
 #include "Event.h"
 #include "Customer.h"
@@ -17,8 +18,14 @@ double GetNextRandomInterval(double avg) {
     return - (1.0 / avg) * log(f);
 }
 
-int main() {
+double factorial(int n) {
+    double result = 1.0;
+    for (int i = 1; i <= n; i++)
+        result *= i;
+    return result;
+}
 
+int main() {
     srand(time(0));
 
     double lambda, mu;
@@ -26,6 +33,11 @@ int main() {
     int numCustomers;
 
     ifstream file("test1.txt");
+    if (!file) {
+        cout << "Error opening test1.txt\n";
+        return 1;
+    }
+
     file >> lambda;
     file >> mu;
     file >> M;
@@ -37,6 +49,8 @@ int main() {
 
     int serverAvailableCnt = M;
     int customersServed = 0;
+    int arrivalsGenerated = 0;
+    bool moreArrivals = true;
 
     double currentTime = 0.0;
 
@@ -44,11 +58,14 @@ int main() {
     double totalServiceTime = 0.0;
     int customerWaitedCnt = 0;
 
-    bool moreArrivals = true;
+    double idleTime = 0.0;
+    bool systemIsIdle = true;
+    double idleStartTime = 0.0;
 
     double firstArrivalTime = GetNextRandomInterval(lambda);
     Customer* firstCust = new Customer(firstArrivalTime);
     pq.insert(Event(firstArrivalTime, ARRIVAL, firstCust));
+    arrivalsGenerated = 1;
 
     while (!pq.isEmpty() && customersServed < numCustomers) {
 
@@ -58,16 +75,19 @@ int main() {
 
         if (e.type == ARRIVAL) {
 
+            if (systemIsIdle) {
+                idleTime += (currentTime - idleStartTime);
+                systemIsIdle = false;
+            }
+
             if (serverAvailableCnt > 0) {
-
                 serverAvailableCnt--;
-
                 cust->startOfServiceTime = currentTime;
 
-                double interval = GetNextRandomInterval(mu);
-                cust->departureTime = currentTime + interval;
+                double serviceInterval = GetNextRandomInterval(mu);
+                cust->departureTime = currentTime + serviceInterval;
 
-                totalServiceTime += interval;
+                totalServiceTime += serviceInterval;
 
                 pq.insert(Event(cust->departureTime, DEPARTURE, cust));
             }
@@ -93,23 +113,31 @@ int main() {
                 Customer* nextCust = fifo.front();
                 fifo.pop();
 
-                serverAvailableCnt--;
-
                 nextCust->startOfServiceTime = currentTime;
 
-                double interval = GetNextRandomInterval(mu);
-                nextCust->departureTime = currentTime + interval;
+                double serviceInterval = GetNextRandomInterval(mu);
+                nextCust->departureTime = currentTime + serviceInterval;
 
-                totalServiceTime += interval;
+                totalServiceTime += serviceInterval;
 
                 pq.insert(Event(nextCust->departureTime,
                                 DEPARTURE,
                                 nextCust));
+
+                serverAvailableCnt--;
+            }
+
+            if (serverAvailableCnt == M && fifo.empty()) {
+                systemIsIdle = true;
+                idleStartTime = currentTime;
             }
         }
 
-        if (moreArrivals && pq.getSize() <= M + 1) {
+        if (arrivalsGenerated >= numCustomers) {
+            moreArrivals = false;
+        }
 
+        if (moreArrivals && pq.getSize() <= M + 1) {
             double nextArrivalTime =
                 currentTime + GetNextRandomInterval(lambda);
 
@@ -119,10 +147,67 @@ int main() {
             pq.insert(Event(nextArrivalTime,
                             ARRIVAL,
                             newCust));
+
+            arrivalsGenerated++;
         }
     }
 
-    cout << "Simulation Complete." << endl;
+    double totalSimTime = currentTime;
+
+    double W_sim  = (totalWaitTime + totalServiceTime) / numCustomers;
+    double Wq_sim = totalWaitTime / numCustomers;
+
+    double rho_sim = 0.0;
+    if (totalSimTime > 0)
+        rho_sim = totalServiceTime / (M * totalSimTime);
+
+    double Po_sim = 0.0;
+    if (totalSimTime > 0)
+        Po_sim = idleTime / totalSimTime;
+
+    double probWait_sim =
+        (double)customerWaitedCnt / numCustomers;
+
+    double rho = lambda / (M * mu);
+
+    double sum = 0.0;
+    for (int i = 0; i <= M - 1; i++) {
+        sum += pow(lambda / mu, i) / factorial(i);
+    }
+
+    double lastTerm =
+        pow(lambda / mu, M) /
+        (factorial(M) * (1 - rho));
+
+    double Po = 1.0 / (sum + lastTerm);
+
+    double Lq =
+        (Po * pow(lambda / mu, M) * rho) /
+        (factorial(M) * pow(1 - rho, 2));
+
+    double L = Lq + (lambda / mu);
+
+    double Wq = Lq / lambda;
+    double W  = Wq + (1.0 / mu);
+
+    cout << fixed << setprecision(4);
+
+    cout << "\nAnalytical Model (test1.txt)\n";
+    cout << "----------------------------------\n";
+    cout << "Po:  " << Po << "\n";
+    cout << "L:   " << L << "\n";
+    cout << "W:   " << W << "\n";
+    cout << "Lq:  " << Lq << "\n";
+    cout << "Wq:  " << Wq << "\n";
+    cout << "rho: " << rho << "\n";
+
+    cout << "\nSimulation Results (test1.txt)\n";
+    cout << "----------------------------------\n";
+    cout << "Po:  " << Po_sim << "\n";
+    cout << "W:   " << W_sim << "\n";
+    cout << "Wq:  " << Wq_sim << "\n";
+    cout << "rho: " << rho_sim << "\n";
+    cout << "Prob(wait): " << probWait_sim << "\n";
 
     return 0;
 }
