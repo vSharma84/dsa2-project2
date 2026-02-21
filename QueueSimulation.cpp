@@ -12,10 +12,10 @@
 
 using namespace std;
 
-double GetNextRandomInterval(double avg) {
+double GetNextRandomInterval(double rate) {
     double f = (double)rand() / RAND_MAX;
     if (f == 0) f = 0.00001;
-    return - (1.0 / avg) * log(f);
+    return -log(f) / rate;
 }
 
 double factorial(int n) {
@@ -49,9 +49,9 @@ void runSimulation(string filename) {
     int serverAvailableCnt = M;
     int customersServed = 0;
     int arrivalsGenerated = 0;
-    bool moreArrivals = true;
 
     double currentTime = 0.0;
+    double lastArrivalTime = 0.0;
 
     double totalWaitTime = 0.0;
     double totalServiceTime = 0.0;
@@ -61,9 +61,9 @@ void runSimulation(string filename) {
     bool systemIsIdle = true;
     double idleStartTime = 0.0;
 
-    double firstArrivalTime = GetNextRandomInterval(lambda);
-    Customer* firstCust = new Customer(firstArrivalTime);
-    pq.insert(Event(firstArrivalTime, ARRIVAL, firstCust));
+    lastArrivalTime = GetNextRandomInterval(lambda);
+    Customer* firstCust = new Customer(lastArrivalTime);
+    pq.insert(Event(lastArrivalTime, ARRIVAL, firstCust));
     arrivalsGenerated = 1;
 
     while (!pq.isEmpty() && customersServed < numCustomers) {
@@ -80,6 +80,7 @@ void runSimulation(string filename) {
             }
 
             if (serverAvailableCnt > 0) {
+
                 serverAvailableCnt--;
                 cust->startOfServiceTime = currentTime;
 
@@ -93,6 +94,14 @@ void runSimulation(string filename) {
             else {
                 fifo.push(cust);
             }
+
+            if (arrivalsGenerated < numCustomers) {
+                lastArrivalTime += GetNextRandomInterval(lambda);
+                Customer* newCust = new Customer(lastArrivalTime);
+                pq.insert(Event(lastArrivalTime, ARRIVAL, newCust));
+                arrivalsGenerated++;
+            }
+
         }
         else {
 
@@ -131,24 +140,6 @@ void runSimulation(string filename) {
                 idleStartTime = currentTime;
             }
         }
-
-        if (arrivalsGenerated >= numCustomers) {
-            moreArrivals = false;
-        }
-
-        if (moreArrivals && pq.getSize() <= M + 1) {
-            double nextArrivalTime =
-                currentTime + GetNextRandomInterval(lambda);
-
-            Customer* newCust =
-                new Customer(nextArrivalTime);
-
-            pq.insert(Event(nextArrivalTime,
-                            ARRIVAL,
-                            newCust));
-
-            arrivalsGenerated++;
-        }
     }
 
     double totalSimTime = currentTime;
@@ -158,7 +149,6 @@ void runSimulation(string filename) {
 
     double rho_sim = totalServiceTime / (M * totalSimTime);
     double Po_sim  = idleTime / totalSimTime;
-
     double probWait_sim =
         (double)customerWaitedCnt / numCustomers;
 
@@ -208,9 +198,7 @@ void runSimulation(string filename) {
 
 int main() {
     srand(time(0));
-
     runSimulation("test1.txt");
     runSimulation("test2.txt");
-
     return 0;
 }
