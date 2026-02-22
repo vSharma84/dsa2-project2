@@ -1,3 +1,13 @@
+/***************************************************************
+  Student Name: Vansh Sharma
+  File Name: Event.h
+  Assignment number: 2
+
+ Defines the Event class and comparator used by the priority queue
+ to process events by time. 
+***************************************************************/
+
+
 #ifndef EVENT_H
 #define EVENT_H
 

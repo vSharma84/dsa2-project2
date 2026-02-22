@@ -1,3 +1,12 @@
+/***************************************************************
+  Student Name: Vansh Sharma
+  File Name: Customer.h
+  Assignment number: 2
+
+ Defines the Customer class used to store arrival, service, and 
+ departure information. 
+***************************************************************/
+
 #ifndef CUSTOMER_H
 #define CUSTOMER_H
 

@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++11 -Wall
 
 OBJS = QueueSimulation.o
 
-p : ${OBJS}
+project2 : ${OBJS}
 	${CXX} ${CXXFLAGS} -o $@ ${OBJS}
 
 QueueSimulation.o : Event.h Customer.h
@@ -11,4 +11,4 @@ QueueSimulation.o : Event.h Customer.h
 
 clean:
 	rm -f *.o
-	rm -f p
+	rm -f project2
