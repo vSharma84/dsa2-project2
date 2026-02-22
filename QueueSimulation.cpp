@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <queue>
+#include <vector>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -8,7 +9,6 @@
 
 #include "Event.h"
 #include "Customer.h"
-#include "MinHeap.h"
 
 using namespace std;
 
@@ -32,18 +32,9 @@ void runSimulation(string filename) {
     int numCustomers;
 
     ifstream file(filename);
-    if (!file) {
-        cout << "Error opening " << filename << endl;
-        return;
-    }
+    file >> lambda >> mu >> M >> numCustomers;
 
-    file >> lambda;
-    file >> mu;
-    file >> M;
-    file >> numCustomers;
-    file.close();
-
-    MinHeap pq(200);
+    priority_queue<Event, vector<Event>, EventCompare> pq;
     queue<Customer*> fifo;
 
     int serverAvailableCnt = M;
@@ -63,12 +54,14 @@ void runSimulation(string filename) {
 
     lastArrivalTime = GetNextRandomInterval(lambda);
     Customer* firstCust = new Customer(lastArrivalTime);
-    pq.insert(Event(lastArrivalTime, ARRIVAL, firstCust));
+    pq.push(Event(lastArrivalTime, ARRIVAL, firstCust));
     arrivalsGenerated = 1;
 
-    while (!pq.isEmpty() && customersServed < numCustomers) {
+    while (!pq.empty() && customersServed < numCustomers) {
 
-        Event e = pq.deleteMin();
+        Event e = pq.top();
+        pq.pop();
+
         currentTime = e.eventTime;
         Customer* cust = e.cust;
 
@@ -89,7 +82,7 @@ void runSimulation(string filename) {
 
                 totalServiceTime += serviceInterval;
 
-                pq.insert(Event(cust->departureTime, DEPARTURE, cust));
+                pq.push(Event(cust->departureTime, DEPARTURE, cust));
             }
             else {
                 fifo.push(cust);
@@ -98,10 +91,9 @@ void runSimulation(string filename) {
             if (arrivalsGenerated < numCustomers) {
                 lastArrivalTime += GetNextRandomInterval(lambda);
                 Customer* newCust = new Customer(lastArrivalTime);
-                pq.insert(Event(lastArrivalTime, ARRIVAL, newCust));
+                pq.push(Event(lastArrivalTime, ARRIVAL, newCust));
                 arrivalsGenerated++;
             }
-
         }
         else {
 
@@ -128,9 +120,9 @@ void runSimulation(string filename) {
 
                 totalServiceTime += serviceInterval;
 
-                pq.insert(Event(nextCust->departureTime,
-                                DEPARTURE,
-                                nextCust));
+                pq.push(Event(nextCust->departureTime,
+                              DEPARTURE,
+                              nextCust));
 
                 serverAvailableCnt--;
             }
@@ -200,5 +192,4 @@ int main() {
     srand(time(0));
     runSimulation("test1.txt");
     runSimulation("test2.txt");
-    return 0;
 }

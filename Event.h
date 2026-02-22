@@ -3,10 +3,7 @@
 
 class Customer;
 
-enum EventType {
-    ARRIVAL,
-    DEPARTURE
-};
+enum EventType { ARRIVAL, DEPARTURE };
 
 class Event {
 public:
@@ -15,11 +12,16 @@ public:
     Customer* cust;
 
     Event() {}
-
     Event(double t, EventType tp, Customer* c) {
         eventTime = t;
         type = tp;
         cust = c;
+    }
+};
+
+struct EventCompare {
+    bool operator()(const Event& a, const Event& b) const {
+        return a.eventTime > b.eventTime;
     }
 };
 

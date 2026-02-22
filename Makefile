@@ -1,16 +1,13 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall
 
-OBJS = QueueSimulation.o MinHeap.o
+OBJS = QueueSimulation.o
 
 p : ${OBJS}
 	${CXX} ${CXXFLAGS} -o $@ ${OBJS}
 
-QueueSimulation.o : Event.h Customer.h MinHeap.h
+QueueSimulation.o : Event.h Customer.h
 	${CXX} ${CXXFLAGS} -c QueueSimulation.cpp
-
-MinHeap.o : MinHeap.h Event.h
-	${CXX} ${CXXFLAGS} -c MinHeap.cpp
 
 clean:
 	rm -f *.o
