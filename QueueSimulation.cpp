@@ -68,14 +68,11 @@ void runSimulation(string filename) {
     int freeServers = M;
     int servedCount = 0;
     int arrivalsCreated = 0;
-
     double currentTime = 0.0;
     double lastArrivalTime = 0.0;
-
     double totalWaitTime = 0.0;
     double totalServiceTime = 0.0;
     int customerWaitedCnt = 0;
-
     double idleTime = 0.0;
     bool systemIsIdle = true;
     double idleStartTime = 0.0;
@@ -163,10 +160,8 @@ void runSimulation(string filename) {
     }
 
     double simDuration = currentTime;
-
     double W_sim  = (totalWaitTime + totalServiceTime) / numCustomers;
     double Wq_sim = totalWaitTime / numCustomers;
-
     double rho_sim = totalServiceTime / (M * simDuration);
     double Po_sim  = idleTime / simDuration;
     double probWait_sim = (double)customerWaitedCnt / numCustomers;
@@ -179,13 +174,9 @@ void runSimulation(string filename) {
     }
 
     double lastTerm = pow(lambda / mu, M) / (factorial(M) * (1 - rho));
-
     double Po = 1.0 / (sum + lastTerm);
-
     double Lq = (Po * pow(lambda / mu, M) * rho) / (factorial(M) * pow(1 - rho, 2));
-
     double L = Lq + (lambda / mu);
-
     double Wq = Lq / lambda;
     double W  = Wq + (1.0 / mu);
     
@@ -203,7 +194,9 @@ void runSimulation(string filename) {
     cout << "Wq:  " << Wq << endl;
     cout << "rho: " << rho << endl;
 
-    cout << "\nSimulation Results\n";
+    cout << endl;
+    cout << "Simulation Results";
+    cout << endl;
     cout << "Po:  " << Po_sim << endl;
     cout << "W:   " << W_sim << endl;
     cout << "Wq:  " << Wq_sim << endl;
