@@ -201,7 +201,7 @@ void runSimulation(string filename) {
     cout << "W:   " << W_sim << endl;
     cout << "Wq:  " << Wq_sim << endl;
     cout << "rho: " << rho_sim << endl;
-    cout << "Prob(wait): " << probWait_sim << endl;
+    cout << "Probability(wait): " << probWait_sim << endl;
     cout << endl;
 }
 
